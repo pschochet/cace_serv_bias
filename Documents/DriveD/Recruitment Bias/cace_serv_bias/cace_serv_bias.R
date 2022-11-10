@@ -171,8 +171,6 @@ if (clus_var == 0) {
 
 # Normalize the ww weights to nt and nc
 
-mydat$ww <- mydat$ww*23
-
 mydat['ttt'] <- mydat[trt_var]
 
 normt <- sum(mydat$ww[mydat$ttt == 1])
