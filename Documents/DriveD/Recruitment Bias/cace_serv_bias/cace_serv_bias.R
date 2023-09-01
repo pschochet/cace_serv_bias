@@ -4,7 +4,7 @@ library("estimatr")
 
 # Define function
 cace_serv_bias <- function(data_csv,serv_var,y_var,trt_var,xtlogit,xc_logit,
-                           x_wls,clus_var,wgt,marg,se_ipw,out_regr,out_est) {
+                           x_wls,clus_var,wgt,marg,se_ipw,df_wls,out_regr,out_est) {
 
 # Read in csv data
 
@@ -34,6 +34,12 @@ if ((se_ipw == '1') | (se_ipw == "")) {
   } else if (se_ipw == '0') {
     se_ipw <- c(0)
     }
+
+if ((df_wls == '1') | (df_wls == "")) {
+  df_wls <- c(1)
+} else if (df_wls == '0') {
+  df_wls <- c(0)
+}
 
 if (out_regr == "") {
   out_regr  <- c('cace regr log.txt')
@@ -233,6 +239,7 @@ if (marg == 1) {
     logt <- suppressWarnings(glmer(formt_clus,
                   family="binomial",
                   weights=ww,
+                  nAGQ=10,
                   data=tldat_clus))
     predt <- predict(logt, newdata = tldat, re.form=NA, type = 'response')
     }
@@ -273,6 +280,7 @@ if (marg == 1) {
     logc <- suppressWarnings(glmer(formc_clus,
                   family="binomial",
                   weights=ww,
+                  nAGQ=10,
                   data=cldat_clus))
     predc <- predict(logc, newdata = cldat, re.form=NA, type = 'response')
     }
@@ -1390,11 +1398,21 @@ sand_se_all_iv_tau  <- sqrt(sand_var_all_iv_tau)
 
 # Conduct significance testing
 
-df_itt <- mclus - nx - 2
-df_tc  <- mclus - nx - k1 - k0 - 4
-df_t   <- mclus - nx - k1 - 3
-df_11  <- mclus - nx - k1 - k0 - 4
-df_iv  <- mclus - nx - k0 - 5
+# Df Updated since get degrees of freedom that are too small for clustered designs
+
+if (df_wls == 0) {
+  df_itt <- mclus - nx - 2
+  df_tc  <- mclus - nx - k1 - k0 - 4
+  df_t   <- mclus - nx - k1 - 3
+  df_11  <- mclus - nx - k1 - k0 - 4
+  df_iv  <- mclus - nx - k0 - 5
+} else if (df_wls == 1) {
+  df_itt <- mclus - nx - 2
+  df_tc  <- mclus - nx - 2
+  df_t   <- mclus - nx - 2
+  df_11  <- mclus - nx - 2
+  df_iv  <- mclus - nx - 2
+}
 
 tstat_itt  <- abs(imp_itt)/sand_se_iv
 
@@ -1468,17 +1486,14 @@ if (iy == 1) {
     }
 
 if (iy == 1) {
-  cat(blank,tits1,blank, sep="\n")
-  print(Sum_data)
+  #cat(blank,tits1,blank, sep="\n")
+  #print(Sum_data)
   cat(blank,tits2,blank, sep="\n")
   print(orig_samp1, row.names = F)
 }
 
 cat(blank,tits3,blank, sep="\n")
 print(anal_samp1, row.names = F)
-
-
-
 
 sink(out_regr,d_app)       # Sink writes out results
 
