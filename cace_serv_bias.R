@@ -3,7 +3,7 @@ library("lme4")       # For multilevel models
 library("estimatr")
 
 # Define function
-cace_serv_bias <- function(data_csv,serv_var,y_var,trt_var,xtlogit,xc_logit,
+cace_serv_bias <- function(data_csv,serv_var,y_var,trt_var,xt_logit,xc_logit,
                            x_wls,clus_var,wgt,marg,se_ipw,df_wls,out_regr,out_est) {
 
 # Read in csv data
